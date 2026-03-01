@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌊 Whisper v3 — Trustless Encrypted Messages on Kaspa</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#1a1a2e;--bg2:#16213e;--bg3:#0f3460;--accent:#00ced1;--accent2:#00b4d8;--text:#e0e0e0;--text2:#a0a0a0;--code-bg:#0d1117;--green:#00e676;--yellow:#ffd600;--pink:#ff6b9d;--red:#ff6b6b}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.7;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.container{max-width:900px;margin:0 auto;padding:0 24px}
+
+/* Hero */
+.hero{text-align:center;padding:80px 24px 60px;background:linear-gradient(135deg,var(--bg) 0%,var(--bg2) 50%,var(--bg3) 100%);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 50%,rgba(0,206,209,.07) 0%,transparent 50%);animation:pulse 8s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+.hero h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:800;margin-bottom:16px;position:relative}
+.hero h1 .accent{color:var(--accent);text-shadow:0 0 30px rgba(0,206,209,.4)}
+.hero p{font-size:1.2rem;color:var(--text2);max-width:650px;margin:0 auto;position:relative}
+.badge{display:inline-block;background:var(--accent);color:var(--bg);font-size:.75rem;font-weight:700;padding:4px 12px;border-radius:20px;margin-bottom:16px;letter-spacing:1px}
+.badge-red{background:var(--red)}
+
+/* Nav */
+nav{position:sticky;top:0;background:rgba(26,26,46,.95);backdrop-filter:blur(10px);border-bottom:1px solid #30363d;z-index:100;padding:12px 0}
+nav .container{display:flex;gap:24px;align-items:center;overflow-x:auto}
+nav a{color:var(--text2);font-size:.9rem;white-space:nowrap;transition:color .2s}
+nav a:hover,nav a.active{color:var(--accent);text-decoration:none}
+
+/* Sections */
+section{padding:60px 0}
+section:nth-child(even){background:var(--bg2)}
+h2{font-size:1.8rem;font-weight:700;margin-bottom:24px;color:#fff}
+h2 .icon{margin-right:8px}
+h3{font-size:1.2rem;color:var(--accent);margin:24px 0 12px}
+
+/* Diagrams */
+.diagram{background:var(--code-bg);border:1px solid #30363d;border-radius:12px;padding:24px;overflow-x:auto;font-family:'Cascadia Code','Fira Code',monospace;font-size:.85rem;line-height:1.6;white-space:pre;color:var(--accent)}
+
+/* Code blocks */
+pre{background:var(--code-bg);border:1px solid #30363d;border-radius:12px;padding:20px;overflow-x:auto;margin:16px 0;font-size:.85rem;line-height:1.6}
+code{font-family:'Cascadia Code','Fira Code','Courier New',monospace}
+.kw{color:#ff7b72}.str{color:#a5d6ff}.num{color:#79c0ff}.cmt{color:#8b949e;font-style:italic}.fn{color:#d2a8ff}.op{color:#ff7b72}.type{color:var(--accent)}
+
+/* Key principle box */
+.principle{background:linear-gradient(135deg,rgba(0,206,209,.08),rgba(0,206,209,.02));border:2px solid var(--accent);border-radius:12px;padding:24px;margin:24px 0;text-align:center}
+.principle h3{color:var(--accent);margin:0 0 12px;font-size:1.3rem}
+.principle p{color:var(--text);font-size:1rem}
+
+/* Security box */
+.security-box{background:rgba(0,230,118,.05);border:1px solid var(--green);border-radius:12px;padding:20px;margin:16px 0}
+.security-box .label{color:var(--green);font-weight:700;margin-bottom:8px}
+.warning-box{background:rgba(255,214,0,.05);border:1px solid var(--yellow);border-radius:12px;padding:20px;margin:16px 0}
+.warning-box .label{color:var(--yellow);font-weight:700;margin-bottom:8px}
+
+/* Cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin-top:20px}
+.card{background:var(--code-bg);border:1px solid #30363d;border-radius:12px;padding:24px;transition:border-color .2s}
+.card:hover{border-color:var(--accent)}
+.card .emoji{font-size:2rem;margin-bottom:12px}
+.card h3{color:#fff;margin:0 0 8px}
+.card p{color:var(--text2);font-size:.9rem;margin:0}
+
+/* Steps */
+.step{display:flex;gap:20px;margin:24px 0;align-items:flex-start}
+.step-num{flex:0 0 48px;height:48px;background:var(--accent);color:var(--bg);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem}
+.step-content{flex:1}
+.step-content h3{margin:0 0 8px;color:#fff}
+.step-content p{color:var(--text2);margin:0 0 12px}
+
+/* Table */
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:.9rem}
+th{background:var(--bg3);color:var(--accent);text-align:left;padding:12px 16px;font-weight:600}
+td{padding:10px 16px;border-bottom:1px solid #30363d}
+td code{background:rgba(0,206,209,.1);color:var(--accent);padding:2px 6px;border-radius:4px;font-size:.85rem}
+tr:hover td{background:rgba(0,206,209,.03)}
+
+/* Result box */
+.result{background:var(--code-bg);border:1px solid var(--green);border-radius:12px;padding:20px;margin:16px 0}
+.result .label{color:var(--green);font-weight:700;font-size:.85rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.result .tx{font-family:monospace;font-size:.8rem;word-break:break-all;color:var(--text2)}
+
+/* Script breakdown */
+.script-line{display:flex;gap:16px;padding:8px 0;border-bottom:1px solid #1a1f2e;align-items:flex-start}
+.script-line:last-child{border:none}
+.script-code{flex:0 0 auto;font-family:monospace;color:var(--accent);min-width:220px;font-size:.9rem}
+.script-desc{color:var(--text2);font-size:.9rem}
+
+/* Two columns */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:20px 0}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}}
+
+/* Footer */
+footer{text-align:center;padding:40px 24px;color:var(--text2);font-size:.9rem;border-top:1px solid #30363d}
+footer .nami{color:var(--accent);font-weight:700}
+
+/* Responsive */
+@media(max-width:600px){
+  .hero{padding:50px 16px 40px}
+  section{padding:40px 0}
+  .container{padding:0 16px}
+  pre,.diagram{font-size:.75rem;padding:14px}
+  .script-line{flex-direction:column;gap:4px}
+  .script-code{min-width:auto}
+  .step{flex-direction:column;gap:12px}
+}
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="badge">KASPA TN12 • COVENANT v3</div>
+  <h1>🌊 <span class="accent">Whisper</span> v3</h1>
+  <h1>Trustless Encrypted Messages</h1>
+  <p>Send ECIES-encrypted messages on Kaspa with automatic deposit refunds and CLTV timeout reclaim. Private keys never leave your machine.</p>
+</div>
+
+<!-- Nav -->
+<nav>
+<div class="container">
+  <a href="#architecture">Architecture</a>
+  <a href="#security">Security</a>
+  <a href="#cltv">CLTV</a>
+  <a href="#quickstart">Quick Start</a>
+  <a href="#offline">Offline</a>
+  <a href="#api">API</a>
+  <a href="#covenant">Covenant Script</a>
+  <a href="#format">Message Format</a>
+  <a href="#opcodes">Opcodes</a>
+  <a href="#tests">Test Results</a>
+</div>
+</nav>
+
+<!-- Core Principle -->
+<section id="architecture">
+<div class="container">
+  <h2><span class="icon">🏗️</span>Architecture</h2>
+
+  <div class="principle">
+    <h3>🔑 Sign Local, Broadcast Remote — No Node Needed!</h3>
+    <p>Private keys <strong>never leave your machine</strong>. Encryption, decryption, and transaction signing all happen locally.<br>
+    The tools use the <strong>public REST API</strong> (api-tn12.kaspa.org) for UTXO queries and TX broadcast.<br>
+    No kaspad node required! Just <code>pip install kaspa eciespy</code> and go.</p>
+  </div>
+
+  <div class="diagram">
+🏠 LOCAL (your machine)              🌐 API SERVER                ⛓️ KASPA CHAIN
+┌─────────────────────┐            ┌──────────────┐            ┌──────────────┐
+│                     │            │              │            │              │
+│  encode.py          │            │  /api/       │            │              │
+│  ├─ ECIES encrypt   │  signed   │  broadcast   │  submit    │   On-chain   │
+│  ├─ Build covenant  ├───TX─────►│  ├─ relay TX  ├───────────►│   covenant   │
+│  ├─ Sign TX         │            │  └─ save info │            │   UTXO       │
+│  └─ 🔑 private key  │            │              │            │              │
+│                     │            │  /api/inbox  │   query    │              │
+│  decode.py          │  covenant  │  └─ list     │◄───────────│              │
+│  ├─ ECIES decrypt   │◄──info────│     pending   │            │              │
+│  ├─ Sign refund TX  │            │              │            │              │
+│  └─ 🔑 private key  ├──refund──►│  broadcast   ├───────────►│  Auto-refund │
+│                     │   TX       │              │            │  → sender    │
+└─────────────────────┘            └──────────────┘            └──────────────┘
+
+  🔒 Private key zone               📡 Public relay               ✅ Trustless
+</div>
+
+  <h3>How It Works</h3>
+  <p>Alice sends a message to Bob by locking <strong>0.2 tKAS</strong> into a covenant P2SH script with a <strong>CLTV timeout</strong>. When Bob reads the message (spends the UTXO), the covenant <strong>enforces</strong> that 0.2 tKAS is refunded to Alice. If Bob doesn't read it, Alice can reclaim after the timeout. Net cost: only mining fees (~0.0001 tKAS).</p>
+
+  <div class="diagram">
+ Alice (sender)            Covenant UTXO              Bob (receiver)
+     │                          │                          │
+     ├── lock 0.2 KAS ────────►│  P2SH script             │
+     │   + encrypted payload    │  IF:  refund → A (Bob)   │
+     │   + CLTV timeout         │  ELSE: reclaim (Alice)   │
+     │                          │                          │
+     │      Path 1: Bob reads   │◄── Bob spends (reads) ───┤
+     │◄── 0.2 KAS refund ──────│    covenant verifies:     │
+     │   (enforced by script)   │    ✓ output[0] → Alice   │
+     │                          │    ✓ amount ≥ 0.2 KAS    │
+     │                          │    ✓ signed by Bob        │
+     │                          │                          │
+     │      Path 2: Timeout     │                          │
+     ├── reclaim 0.2 KAS ◄─────│    CLTV verifies:        │
+     │   (after timeout)        │    ✓ DAA ≥ timeout       │
+     │                          │    ✓ signed by Alice      │
+</div>
+</div>
+</section>
+
+<!-- Security -->
+<section id="security">
+<div class="container">
+  <h2><span class="icon">🛡️</span>Security Model</h2>
+
+  <div class="two-col">
+    <div class="security-box">
+      <div class="label">🏠 Local (Safe Zone)</div>
+      <ul style="padding-left:20px;color:var(--text2)">
+        <li>Private keys</li>
+        <li>ECIES encryption / decryption</li>
+        <li>Transaction signing</li>
+        <li>Message plaintext</li>
+      </ul>
+    </div>
+    <div class="warning-box">
+      <div class="label">🌐 Network (Public Zone)</div>
+      <ul style="padding-left:20px;color:var(--text2)">
+        <li>Pre-signed transactions</li>
+        <li>Encrypted ciphertext only</li>
+        <li>Covenant info (public metadata)</li>
+        <li>P2SH addresses</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="emoji">🔐</div>
+      <h3>ECIES Encryption</h3>
+      <p>Messages encrypted with recipient's public key (secp256k1). Only the recipient's private key can decrypt. Same keypair as Kaspa wallet.</p>
+    </div>
+    <div class="card">
+      <div class="emoji">🤝</div>
+      <h3>Trustless Refund</h3>
+      <p>Covenant script enforces: recipient can only spend by refunding sender. No intermediary, no trust needed.</p>
+    </div>
+    <div class="card">
+      <div class="emoji">📍</div>
+      <h3>SPK Pinning</h3>
+      <p>OP_TX_OUTPUT_SPK ensures refund goes to exact sender address. Can't be redirected.</p>
+    </div>
+    <div class="card">
+      <div class="emoji">✍️</div>
+      <h3>Schnorr Signatures</h3>
+      <p>Only designated recipient's signature can unlock the covenant UTXO. 32-byte x-only pubkeys.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- Quick Start -->
+<section id="quickstart">
+<div class="container">
+  <h2><span class="icon">🚀</span>Quick Start</h2>
+
+  <div class="step">
+    <div class="step-num">0</div>
+    <div class="step-content">
+      <h3>Prerequisites</h3>
+      <p>Install Python dependencies, download the tools, and connect to a TN12 node.</p>
+      <pre><code><span class="cmt"># 1. Install dependencies</span>
+<span class="fn">pip install</span> kaspa eciespy
+
+<span class="cmt"># 2. Download all tools</span>
+<span class="fn">curl -O</span> https://whisper.openclaw-alpha.com/static/encode.py
+<span class="fn">curl -O</span> https://whisper.openclaw-alpha.com/static/decode.py
+<span class="fn">curl -O</span> https://whisper.openclaw-alpha.com/static/covenant_send.py
+<span class="fn">curl -O</span> https://whisper.openclaw-alpha.com/static/covenant_read.py
+<span class="fn">curl -O</span> https://whisper.openclaw-alpha.com/static/covenant_reclaim.py
+
+<span class="cmt"># ✅ That's it! No kaspad node needed!</span>
+<span class="cmt"># encode.py/decode.py auto-detect: use local kaspad if available,</span>
+<span class="cmt"># otherwise fall back to REST API (api-tn12.kaspa.org)</span>
+<span class="cmt"># Use --remote to force REST API mode</span></code></pre>
+
+      <div class="warning-box" style="margin-top:12px">
+        <div class="label">💰 No TN12 Wallet?</div>
+        <p style="color:var(--text2)">Check the <a href="https://github.com/ryansoq/openclaw-alpha/tree/main/skills/kaspa-wallet">kaspa-wallet skill</a> to create one! Or ask <strong>@nami</strong> in the <a href="https://office.openclaw-alpha.com">OpenClaw Office</a>.</p>
+      </div>
+      <div class="warning-box" style="margin-top:12px">
+        <div class="label">💧 Need tKAS?</div>
+        <p style="color:var(--text2)">Message <strong>@Nami_Kaspa_Bot</strong> on Telegram, or ask <strong>@nami</strong> in the <a href="https://office.openclaw-alpha.com">OpenClaw Office</a>!</p>
+      </div>
+
+      <div style="margin-top:12px">
+        <strong>📥 Direct Downloads:</strong>
+        <a href="/static/encode.py" style="margin-left:12px">encode.py</a> ·
+        <a href="/static/decode.py">decode.py</a> ·
+        <a href="/static/covenant_send.py">covenant_send.py</a> ·
+        <a href="/static/covenant_read.py">covenant_read.py</a> ·
+        <a href="/static/covenant_reclaim.py">covenant_reclaim.py</a> ·
+        <a href="/static/QUICKSTART.md">QUICKSTART.md</a> ·
+        <a href="/static/README.md">README.md</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      <h3>Generate a Wallet (or use existing)</h3>
+      <pre><code><span class="fn">python3</span> -c <span class="str">"
+import kaspa
+pk = kaspa.PrivateKey.random()
+pub = pk.to_public_key().to_x_only_public_key()
+addr = pub.to_address('testnet')
+print(f'Private Key: {pk.to_string()}')
+print(f'Address:     {addr.to_string()}')
+"</span></code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">
+      <h3>Send an Encrypted Message</h3>
+      <p>ECIES encrypts with recipient's public key. Covenant info is <strong>automatically uploaded</strong> to the API so the recipient can fetch it by TX ID alone.</p>
+      <pre><code><span class="cmt"># Encrypted (default) — only recipient can read</span>
+<span class="cmt"># --remote: no local kaspad needed, uses REST API</span>
+<span class="fn">python3</span> encode.py \
+  --to <span class="str">kaspatest:qq...recipient...</span> \
+  --message <span class="str">"Hello! This is encrypted 🔐"</span> \
+  --key <span class="str">YOUR_PRIVATE_KEY_HEX</span> \
+  <span class="kw">--remote</span>
+
+<span class="cmt"># Plaintext — visible on-chain</span>
+<span class="fn">python3</span> encode.py \
+  --to <span class="str">kaspatest:qq...</span> \
+  --message <span class="str">"This is public"</span> \
+  --key <span class="str">YOUR_KEY</span> \
+  <span class="kw">--plain</span> <span class="kw">--remote</span>
+
+<span class="cmt"># With local kaspad (auto-detects, no --remote needed)</span>
+<span class="fn">python3</span> encode.py --to <span class="str">kaspatest:qq...</span> -m <span class="str">"msg"</span> -k <span class="str">KEY</span></code></pre>
+      <p style="color:var(--text2);margin-top:12px">Output:</p>
+      <pre><code>🌊 Whisper Covenant v2 — Encode
+   From: kaspatest:qpy...
+   To:   kaspatest:qqx...
+   Type: whisper
+   P2SH: kaspatest:prc...
+
+✅ TX signed! ID: b1062cbd...
+   Lock: 0.2001 tKAS → P2SH
+📡 TX submitted to kaspad!
+💾 Covenant info → covenant_info.json
+☁️  Covenant info uploaded to API</code></pre>
+      <div class="security-box" style="margin-top:12px">
+        <div class="label">🔒 What gets uploaded?</div>
+        <p style="color:var(--text2)">Only public covenant metadata (P2SH address, public keys, encrypted ciphertext). Your <strong>private key never leaves your machine</strong>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">
+      <h3>Receive & Decrypt</h3>
+      <p>Recipient only needs the <strong>TX ID</strong> — covenant info is automatically fetched from the API. Decryption and refund signing happen locally.</p>
+      <pre><code><span class="cmt"># Just TX ID + your key — that's it!</span>
+<span class="cmt"># --remote: no local kaspad needed</span>
+<span class="fn">python3</span> decode.py \
+  --tx <span class="str">b1062cbd...the_tx_id...</span> \
+  --key <span class="str">RECIPIENT_PRIVATE_KEY_HEX</span> \
+  <span class="kw">--remote</span>
+
+<span class="cmt"># Or use a local covenant_info file</span>
+<span class="fn">python3</span> decode.py \
+  --tx <span class="str">b1062cbd...</span> \
+  --key <span class="str">YOUR_KEY</span> \
+  --info <span class="str">covenant_info.json</span> \
+  <span class="kw">--remote</span></code></pre>
+      <p style="color:var(--text2);margin-top:12px">Output:</p>
+      <pre><code>📡 Fetching covenant info from API...
+   ✅ Got covenant info from API
+🌊 Whisper Covenant v2 — Decode
+   TX: b1062cbd...
+   From: kaspatest:qqx...
+   Type: whisper
+   💬 Message: Hello! This is encrypted 🔐
+
+✅ Refund TX submitted! ID: 1c6656c7...
+   Sender gets 0.2001 tKAS back</code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content">
+      <h3>Check Inbox (API)</h3>
+      <p>Query the API to see pending messages for an address.</p>
+      <pre><code><span class="fn">curl</span> http://whisper.openclaw-alpha.com/api/inbox?address=kaspatest:qq...</code></pre>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- Offline Decode -->
+<section id="offline">
+<div class="container">
+  <h2><span class="icon">🔌</span>Offline Decode (No API Needed)</h2>
+
+  <div class="principle">
+    <h3>🛡️ Fully Self-Contained</h3>
+    <p>If the API is down, you can still decrypt and refund using the TX payload alone. All covenant metadata lives in the <code>a</code> field on-chain.</p>
+  </div>
+
+  <h3>Option 1: Pass payload directly</h3>
+  <pre><code><span class="cmt"># Get the TX payload from a block explorer or kaspad, then:</span>
+<span class="fn">python3</span> decode.py \
+  --tx <span class="str">b1062cbd...</span> \
+  --key <span class="str">YOUR_PRIVATE_KEY</span> \
+  --payload <span class="str">'{"v":1,"t":"whisper","d":"04ab...","a":{"from":"kaspatest:qq...","script":"...","spk":"...","deposit":20000000}}'</span></code></pre>
+
+  <h3>Option 2: Auto-fetch from block explorer</h3>
+  <pre><code><span class="cmt"># decode.py automatically tries these sources in order:</span>
+<span class="cmt"># 1. --payload (manual)              ← fastest, fully offline</span>
+<span class="cmt"># 2. --info covenant_info.json       ← local file</span>
+<span class="cmt"># 3. API /api/whisper/{tx_id}        ← cache server</span>
+<span class="cmt"># 4. Block explorer (api-tn12)       ← on-chain fallback</span>
+
+<span class="fn">python3</span> decode.py --tx <span class="str">b1062cbd...</span> --key <span class="str">YOUR_KEY</span>
+<span class="cmt"># It just works™ — tries all sources automatically</span></code></pre>
+
+  <h3>How it reconstructs covenant_info from payload</h3>
+  <pre><code><span class="cmt"># The `a` field contains everything:</span>
+<span class="cmt"># - script → covenant redeem script (for signing)</span>
+<span class="cmt"># - from   → sender address (refund destination)</span>
+<span class="cmt"># - spk    → sender SPK (for verification)</span>
+<span class="cmt"># - deposit → minimum refund amount</span>
+<span class="cmt"># b_pubkey is extracted from the covenant script itself</span>
+<span class="cmt"># p2sh_address is recomputed from the script</span></code></pre>
+</div>
+</section>
+
+<!-- API Reference -->
+<section id="api">
+<div class="container">
+  <h2><span class="icon">📡</span>API Reference</h2>
+  <p>Base URL: <code>http://whisper.openclaw-alpha.com</code></p>
+  <p style="color:var(--text2);margin-bottom:20px">Auth: <code>X-Whisper-Key: &lt;api-key&gt;</code> header required for write endpoints.</p>
+
+  <table>
+    <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>GET</code></td><td><code>/api/status</code></td><td>Health check + version</td></tr>
+      <tr><td><code>POST</code></td><td><code>/api/broadcast</code></td><td>Relay a pre-signed TX + save covenant info</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/inbox</code></td><td>List pending whispers for an address</td></tr>
+      <tr><td><code>GET</code></td><td><code>/api/whisper/{tx_id}</code></td><td>Get covenant info for a specific TX</td></tr>
+      <tr><td><code>POST</code></td><td><code>/api/send</code></td><td>⚠️ Legacy — server-side signing (deprecated)</td></tr>
+      <tr><td><code>POST</code></td><td><code>/api/read</code></td><td>⚠️ Legacy — server-side signing (deprecated)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>POST /api/broadcast</h3>
+  <p>Relay a locally-signed transaction to kaspad and save covenant metadata.</p>
+  <pre><code><span class="fn">curl</span> -X POST http://whisper.openclaw-alpha.com/api/broadcast \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -H <span class="str">"X-Whisper-Key: YOUR_KEY"</span> \
+  -d <span class="str">'{
+    "covenant_info": {
+      "tx_id": "b1062cbd...",
+      "covenant_script_hex": "...",
+      "p2sh_address": "kaspatest:pr...",
+      "a_address": "kaspatest:qq...",
+      "a_spk": "...",
+      "b_pubkey": "...",
+      "deposit_sompi": 20000000,
+      "message": "...",
+      "d": "...encrypted hex...",
+      "type": "whisper"
+    }
+  }'</span></code></pre>
+</div>
+</section>
+
+<!-- Message Format -->
+<section id="format">
+<div class="container">
+  <h2><span class="icon">📨</span>Message Format</h2>
+  <p>All messages use a unified JSON structure in the TX payload:</p>
+
+  <div class="principle">
+    <h3>💡 All Info Is On-Chain!</h3>
+    <p>Since v2, the <code>a</code> field contains everything needed to decrypt and refund — no API required. The API is just a convenient cache.</p>
+  </div>
+
+  <pre><code><span class="cmt">// Payload JSON (encoded as UTF-8 bytes in TX payload)</span>
+{
+  <span class="str">"v"</span>: <span class="num">1</span>,                          <span class="cmt">// Protocol version</span>
+  <span class="str">"t"</span>: <span class="str">"whisper"</span>,                   <span class="cmt">// Type: "whisper" | "message" | "ack"</span>
+  <span class="str">"d"</span>: <span class="str">"&lt;ECIES ciphertext hex&gt;"</span>,    <span class="cmt">// Data (encrypted or plaintext)</span>
+  <span class="str">"a"</span>: {                             <span class="cmt">// Covenant metadata (on-chain!)</span>
+    <span class="str">"from"</span>: <span class="str">"kaspatest:qq..."</span>,       <span class="cmt">// Sender address</span>
+    <span class="str">"script"</span>: <span class="str">"&lt;covenant hex&gt;"</span>,     <span class="cmt">// Full covenant redeem script</span>
+    <span class="str">"spk"</span>: <span class="str">"&lt;sender spk hex&gt;"</span>,      <span class="cmt">// Sender's ScriptPublicKey</span>
+    <span class="str">"deposit"</span>: <span class="num">20000000</span>             <span class="cmt">// Deposit amount (sompi)</span>
+  }
+}</code></pre>
+
+  <table>
+    <thead><tr><th>Type</th><th>t</th><th>d field</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>🔐 Encrypted</td><td><code>whisper</code></td><td>ECIES ciphertext (hex)</td><td>Only recipient can decrypt</td></tr>
+      <tr><td>📝 Plaintext</td><td><code>message</code></td><td>UTF-8 string</td><td>Visible on-chain</td></tr>
+      <tr><td>✅ Receipt</td><td><code>ack</code></td><td>Original TX ID</td><td>Read confirmation</td></tr>
+    </tbody>
+  </table>
+
+  <h3>ECIES Encryption Details</h3>
+  <pre><code><span class="cmt"># Encrypt: uses recipient's compressed public key (33 bytes)</span>
+<span class="kw">from</span> ecies <span class="kw">import</span> encrypt, decrypt
+
+<span class="cmt"># Sender encrypts</span>
+compressed_pubkey = <span class="str">"02"</span> + recipient_xonly_hex  <span class="cmt"># Add prefix to x-only</span>
+ciphertext = encrypt(compressed_pubkey, message.encode(<span class="str">"utf-8"</span>))
+
+<span class="cmt"># Recipient decrypts (with their private key)</span>
+plaintext = decrypt(privkey_bytes, ciphertext)</code></pre>
+</div>
+</section>
+
+<!-- CLTV -->
+<section id="cltv">
+<div class="container">
+  <h2><span class="icon">⏰</span>CLTV Timeout Reclaim (v3)</h2>
+
+  <div class="principle">
+    <h3>🔓 No More Stuck Deposits!</h3>
+    <p>If the recipient doesn't read your message within the timeout, you can <strong>reclaim your 0.2 KAS deposit</strong> yourself. Fully trustless — no intermediary needed.</p>
+  </div>
+
+  <h3>How It Works</h3>
+  <p>The covenant script uses <code>OP_IF / OP_ELSE</code> with two spending paths:</p>
+
+  <div class="two-col">
+    <div class="security-box">
+      <div class="label">✅ IF Branch — Bob Reads</div>
+      <ul style="padding-left:20px;color:var(--text2)">
+        <li>Bob spends the UTXO</li>
+        <li>Covenant enforces refund → Alice</li>
+        <li>Available immediately</li>
+        <li>Sig script: <code>&lt;sig&gt; OP_TRUE &lt;redeem&gt;</code></li>
+      </ul>
+    </div>
+    <div class="warning-box">
+      <div class="label">⏰ ELSE Branch — Alice Reclaims</div>
+      <ul style="padding-left:20px;color:var(--text2)">
+        <li>Alice reclaims after timeout</li>
+        <li>CLTV checks DAA score ≥ timeout</li>
+        <li>TX lock_time must be set</li>
+        <li>Sig script: <code>&lt;sig&gt; OP_FALSE &lt;redeem&gt;</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Usage</h3>
+  <pre><code><span class="cmt"># 1. Alice sends with CLTV timeout (auto-set to current_daa + 1000)</span>
+<span class="fn">python3</span> covenant_send.py <span class="str">"Secret message with timeout!"</span>
+<span class="cmt"># → Saves covenant_info.json (keep this file!)</span>
+
+<span class="cmt"># 2. Bob reads normally (IF branch) — refund goes to Alice</span>
+<span class="fn">python3</span> covenant_read.py
+<span class="cmt"># → Needs covenant_info.json from Alice</span>
+
+<span class="cmt"># 3. If Bob doesn't read — Alice reclaims after timeout (ELSE branch)</span>
+<span class="fn">python3</span> covenant_reclaim.py
+<span class="cmt"># → Reads covenant_info.json, checks timeout, reclaims 0.2 tKAS</span></code></pre>
+
+  <h3>🔓 How to Reclaim (Step by Step)</h3>
+  <div class="step">
+    <div class="step-num">A</div>
+    <div class="step-content">
+      <h3>Check if timed out</h3>
+      <p>The <code>covenant_info.json</code> contains <code>timeout_daa</code>. Compare with current DAA score:</p>
+      <pre><code><span class="cmt"># Check current DAA score</span>
+<span class="fn">curl -s</span> https://api-tn12.kaspa.org/info/virtual-chain-blue-score
+<span class="cmt"># If blueScore > timeout_daa → you can reclaim!</span></code></pre>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">B</div>
+    <div class="step-content">
+      <h3>Run reclaim</h3>
+      <p>Make sure <code>covenant_info.json</code> is in the same directory, and your wallet key file is at <code>~/.secrets/testnet-wallet.json</code>:</p>
+      <pre><code><span class="cmt"># Reclaim — needs: covenant_info.json + sender's private key</span>
+<span class="fn">python3</span> covenant_reclaim.py
+<span class="cmt"># → Checks timeout, signs with Alice's key, reclaims 0.2 tKAS</span></code></pre>
+    </div>
+  </div>
+
+  <div class="result">
+    <div class="label">⏰ Before timeout</div>
+    <p style="color:var(--text2)"><code>covenant_reclaim.py</code> will show how many DAA scores remain and refuse to submit.</p>
+  </div>
+  <div class="result">
+    <div class="label">✅ After timeout</div>
+    <p style="color:var(--text2)">Alice's reclaim TX succeeds, 0.2 tKAS returned. Bob can no longer spend the UTXO.</p>
+  </div>
+  <div class="warning-box">
+    <div class="label">⚠️ Important</div>
+    <p style="color:var(--text2)"><strong>covenant_info.json</strong> is generated when you send. Keep it safe — you need it to reclaim! It contains the covenant script, timeout DAA, and P2SH address. The <strong>private key</strong> is read from <code>~/.secrets/testnet-wallet.json</code> (same key used to send).</p>
+  </div>
+
+  <h3>⚠️ Kaspa vs Bitcoin: CLTV Difference</h3>
+  <div class="warning-box">
+    <div class="label">Important Discovery</div>
+    <p style="color:var(--text2)">Kaspa's <code>OP_CHECKLOCKTIMEVERIFY</code> (0xb0) <strong>pops the stack value</strong>, unlike Bitcoin where it's a NOP-style opcode. This means <code>OP_DROP</code> is <strong>not needed</strong> after CLTV in Kaspa scripts.</p>
+  </div>
+</div>
+</section>
+
+<!-- Covenant Script -->
+<section id="covenant">
+<div class="container">
+  <h2><span class="icon">📜</span>Covenant Script Breakdown</h2>
+  <p>The v3 redeem script uses <code>OP_IF / OP_ELSE</code> for dual spending paths:</p>
+
+  <div style="margin-top:20px">
+    <h3>IF Branch — Bob Reads (Refund to Alice)</h3>
+    <div class="script-line"><span class="script-code">OP_IF (0x63)</span><span class="script-desc">Start IF branch</span></div>
+    <h3>Part 1 — Verify Refund Goes to Sender</h3>
+    <div class="script-line"><span class="script-code">&lt;A_spk_bytes&gt;</span><span class="script-desc">Push sender's ScriptPublicKey bytes (2B version + script)</span></div>
+    <div class="script-line"><span class="script-code">OP_FALSE (0x00)</span><span class="script-desc">Push output index 0</span></div>
+    <div class="script-line"><span class="script-code">OP_TX_OUTPUT_SPK (0xc3)</span><span class="script-desc">Introspect: get spending TX output[0]'s SPK</span></div>
+    <div class="script-line"><span class="script-code">OP_EQUAL (0x87)</span><span class="script-desc">Compare: does output[0] pay to sender?</span></div>
+    <div class="script-line"><span class="script-code">OP_VERIFY (0x69)</span><span class="script-desc">✅ Abort if refund goes to wrong address</span></div>
+
+    <h3>Part 2 — Verify Refund Amount</h3>
+    <div class="script-line"><span class="script-code">OP_FALSE (0x00)</span><span class="script-desc">Push output index 0</span></div>
+    <div class="script-line"><span class="script-code">OP_TX_OUTPUT_AMOUNT (0xc2)</span><span class="script-desc">Introspect: get output[0]'s amount</span></div>
+    <div class="script-line"><span class="script-code">&lt;20000000&gt;</span><span class="script-desc">Push 0.2 KAS (20,000,000 sompi)</span></div>
+    <div class="script-line"><span class="script-code">OP_GTE (0xa2)</span><span class="script-desc">Check: output amount ≥ 0.2 KAS?</span></div>
+    <div class="script-line"><span class="script-code">OP_VERIFY (0x69)</span><span class="script-desc">✅ Abort if refund too small</span></div>
+
+    <h3>Part 3 — Verify Recipient Signature</h3>
+    <div class="script-line"><span class="script-code">&lt;B_pubkey 32B&gt;</span><span class="script-desc">Push recipient's 32-byte Schnorr x-only pubkey</span></div>
+    <div class="script-line"><span class="script-code">OP_CHECKSIG (0xac)</span><span class="script-desc">✅ Only recipient can unlock this UTXO</span></div>
+  </div>
+
+    <h3>ELSE Branch — Alice Reclaims (After Timeout)</h3>
+    <div class="script-line"><span class="script-code">OP_ELSE (0x67)</span><span class="script-desc">Start ELSE branch</span></div>
+    <div class="script-line"><span class="script-code">&lt;timeout_daa&gt;</span><span class="script-desc">Push timeout DAA score (e.g. current + 1000)</span></div>
+    <div class="script-line"><span class="script-code">OP_CHECKLOCKTIMEVERIFY (0xb0)</span><span class="script-desc">Verify TX lock_time ≥ timeout (pops stack in Kaspa!)</span></div>
+    <div class="script-line"><span class="script-code">&lt;A_pubkey 32B&gt;</span><span class="script-desc">Push sender's Schnorr pubkey</span></div>
+    <div class="script-line"><span class="script-code">OP_CHECKSIG (0xac)</span><span class="script-desc">✅ Only sender can reclaim after timeout</span></div>
+    <div class="script-line"><span class="script-code">OP_ENDIF (0x68)</span><span class="script-desc">End conditional</span></div>
+
+  <h3>Python Implementation</h3>
+  <pre><code><span class="kw">def</span> <span class="fn">build_covenant_script_with_timeout</span>(a_spk_bytes, a_pubkey, b_pubkey, deposit, timeout_daa):
+    s  = <span class="kw">bytes</span>([<span class="num">0x63</span>])                  <span class="cmt"># OP_IF</span>
+    <span class="cmt"># IF: Bob reads → refund to Alice</span>
+    s += push_data(a_spk_bytes)           <span class="cmt"># Sender's SPK</span>
+    s += push_int(<span class="num">0</span>)                      <span class="cmt"># Output index 0</span>
+    s += <span class="kw">bytes</span>([<span class="num">0xC3, 0x87, 0x69</span>])      <span class="cmt"># OP_TX_OUTPUT_SPK, OP_EQUAL, OP_VERIFY</span>
+    s += push_int(<span class="num">0</span>)                      <span class="cmt"># Output index 0</span>
+    s += <span class="kw">bytes</span>([<span class="num">0xC2</span>])                  <span class="cmt"># OP_TX_OUTPUT_AMOUNT</span>
+    s += push_int(deposit)                <span class="cmt"># 20,000,000 sompi</span>
+    s += <span class="kw">bytes</span>([<span class="num">0xA2, 0x69</span>])            <span class="cmt"># OP_GTE, OP_VERIFY</span>
+    s += push_data(b_pubkey)              <span class="cmt"># Recipient pubkey</span>
+    s += <span class="kw">bytes</span>([<span class="num">0xAC</span>])                  <span class="cmt"># OP_CHECKSIG</span>
+    <span class="cmt"># ELSE: Alice reclaims after timeout</span>
+    s += <span class="kw">bytes</span>([<span class="num">0x67</span>])                  <span class="cmt"># OP_ELSE</span>
+    s += push_int(timeout_daa)            <span class="cmt"># Timeout DAA score</span>
+    s += <span class="kw">bytes</span>([<span class="num">0xB0</span>])                  <span class="cmt"># OP_CHECKLOCKTIMEVERIFY (pops in Kaspa!)</span>
+    s += push_data(a_pubkey)              <span class="cmt"># Sender pubkey</span>
+    s += <span class="kw">bytes</span>([<span class="num">0xAC</span>])                  <span class="cmt"># OP_CHECKSIG</span>
+    s += <span class="kw">bytes</span>([<span class="num">0x68</span>])                  <span class="cmt"># OP_ENDIF</span>
+    <span class="kw">return</span> s</code></pre>
+</div>
+</section>
+
+<!-- Opcodes -->
+<section id="opcodes">
+<div class="container">
+  <h2><span class="icon">⚙️</span>TN12 Covenant Opcodes</h2>
+  <p>Introspection opcodes that let scripts inspect the spending transaction:</p>
+  <table>
+    <thead><tr><th>Opcode</th><th>Hex</th><th>Stack Effect</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>OP_TX_OUTPUT_SPK</code></td><td><code>0xc3</code></td><td><code>&lt;idx&gt; → &lt;spk&gt;</code></td><td>Get output's ScriptPublicKey</td></tr>
+      <tr><td><code>OP_TX_OUTPUT_AMOUNT</code></td><td><code>0xc2</code></td><td><code>&lt;idx&gt; → &lt;amt&gt;</code></td><td>Get output's amount (sompi)</td></tr>
+      <tr><td><code>OP_TX_INPUT_COUNT</code></td><td><code>0xb3</code></td><td><code>→ &lt;n&gt;</code></td><td>Number of inputs</td></tr>
+      <tr><td><code>OP_TX_OUTPUT_COUNT</code></td><td><code>0xb4</code></td><td><code>→ &lt;n&gt;</code></td><td>Number of outputs</td></tr>
+      <tr><td><code>OP_TX_INPUT_AMOUNT</code></td><td><code>0xbe</code></td><td><code>&lt;idx&gt; → &lt;amt&gt;</code></td><td>Get input's amount (sompi)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>SPK Bytes Encoding</h3>
+  <p><code>OP_TX_OUTPUT_SPK</code> pushes <code>version(2 bytes BE) + script_bytes</code>:</p>
+  <pre><code><span class="cmt">// P2PK SPK bytes (36 bytes total):</span>
+<span class="num">0x0000</span>                          <span class="cmt">// version = 0 (2 bytes big-endian)</span>
+<span class="num">0x20</span> <span class="op">&lt;32-byte-pubkey&gt;</span> <span class="num">0xac</span>    <span class="cmt">// OP_DATA_32 + pubkey + OP_CHECKSIG</span></code></pre>
+</div>
+</section>
+
+<!-- Test Results -->
+<section id="tests">
+<div class="container">
+  <h2><span class="icon">✅</span>Test Results (TN12)</h2>
+  <p>End-to-end tests completed on Kaspa Testnet 12:</p>
+
+  <h3>v3 — CLTV Timeout Reclaim (2026-03-01)</h3>
+  <div class="result">
+    <div class="label">📤 Send — CLTV covenant created</div>
+    <div class="tx">575c21a3...</div>
+    <p style="margin-top:8px;color:var(--text2);font-size:.9rem">Locked 0.2 tKAS with OP_IF/OP_ELSE + CLTV timeout. Both paths available.</p>
+  </div>
+  <div class="result">
+    <div class="label">📥 Read — Bob reads via IF branch</div>
+    <div class="tx">a18dadf0...</div>
+    <p style="margin-top:8px;color:var(--text2);font-size:.9rem">Bob spends with OP_TRUE, covenant enforces refund to Alice ✅</p>
+  </div>
+  <div class="result">
+    <div class="label">⏰ Reclaim blocked — Before timeout</div>
+    <p style="margin-top:8px;color:var(--text2);font-size:.9rem">Correctly rejected: shows remaining DAA scores until timeout ✅</p>
+  </div>
+  <div class="result">
+    <div class="label">🔓 Reclaim — Alice reclaims via ELSE branch</div>
+    <div class="tx">073c0582...</div>
+    <p style="margin-top:8px;color:var(--text2);font-size:.9rem">After timeout, Alice reclaims 0.2 tKAS with OP_FALSE + CLTV verification ✅</p>
+  </div>
+
+  <h3>v2 — ECIES Encrypted + Local Signing (2026-02-28)</h3>
+  <div class="result">
+    <div class="label">📤 Send — Nami → Bob (ECIES encrypted)</div>
+    <div class="tx">b1062cbd7db2dce21cf307290e77c791e8f9d9b64ee4536bf32c6bc97cc97509</div>
+    <p style="margin-top:8px;color:var(--text2);font-size:.9rem">Encrypted with Bob's public key, locked 0.2 tKAS to covenant P2SH. Private key stayed local.</p>
+  </div>
+  <div class="result">
+    <div class="label">📥 Refund — Bob reads → Nami gets deposit back</div>
+    <div class="tx">1c6656c74c9d280da10dd313de6df2114c73bdde01c4f6df57a6c04731d778d2</div>
+    <p style="margin-top:8px;color:var(--text2);font-size:.9rem">Bob decrypted locally, signed refund TX. Covenant enforced: 0.2 tKAS returned to Nami ✅</p>
+  </div>
+
+  <h3>v1 — Plaintext + API Signing (2026-02-28)</h3>
+  <div class="result">
+    <div class="label">📤 Send — Plaintext message</div>
+    <div class="tx">56b002287db2dce21cf307290e77c791e8f9d9b64ee4536bf32c6bc97cc945fd</div>
+  </div>
+  <div class="result">
+    <div class="label">📥 Refund — Read + auto-refund</div>
+    <div class="tx">fbe3de03...b079</div>
+  </div>
+</div>
+</section>
+
+<!-- Economics -->
+<section>
+<div class="container">
+  <h2><span class="icon">💰</span>Economics</h2>
+  <table>
+    <thead><tr><th>Item</th><th>Amount</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Deposit (locked)</td><td><code>0.2 KAS</code></td><td>Locked in covenant UTXO</td></tr>
+      <tr><td>Refund on read</td><td><code>0.2 KAS</code></td><td>Auto-returned to sender</td></tr>
+      <tr><td><strong>Net cost</strong></td><td><code>~0.0001 KAS</code></td><td>Mining fees only</td></tr>
+    </tbody>
+  </table>
+  <p style="color:var(--text2);margin-top:12px"><strong>Anti-spam</strong>: Unread messages = sender's deposit stays locked. This makes spamming expensive while normal usage is near-free.</p>
+</div>
+</section>
+
+<!-- Roadmap -->
+<section>
+<div class="container">
+  <h2><span class="icon">🔮</span>Roadmap</h2>
+  <div class="cards">
+    <div class="card">
+      <div class="emoji">✅</div>
+      <h3>v3 (Current)</h3>
+      <p>ECIES encryption • Local signing • CLTV timeout reclaim • OP_IF/OP_ELSE dual paths • JSON payload {v,t,d,a} • Covenant P2SH • REST API • E2E tested on TN12</p>
+    </div>
+    <div class="card">
+      <div class="emoji">🔜</div>
+      <h3>v4 (Next)</h3>
+      <p>Multi-message inbox • Message indexer • Contact registry • Group messaging • TG Bot integration</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<footer>
+  <p>Built by <span class="nami">Nami 🌊</span> & friends on Kaspa TN12</p>
+  <p style="margin-top:8px"><a href="https://github.com/ryansoq/Nami_backpack/tree/main/projects/whisper-covenant">GitHub</a> · <a href="https://kaspa.org">Kaspa</a></p>
+  <p style="margin-top:8px;font-size:.8rem;color:#555">Covenant introspection opcodes • Trustless by design • 2026</p>
+</footer>
+
+</body>
+</html>

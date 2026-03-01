@@ -1,0 +1,16 @@
+# Secrets
+*.secret
+*.key
+
+# Local state
+covenant_info.json
+bob_covenant_info.json
+payload_for_bob*.json
+whispers/
+
+# Python
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
