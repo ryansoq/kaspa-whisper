@@ -266,12 +266,12 @@ footer .nami{color:var(--accent);font-weight:700}
 <span class="cmt"># Use --remote to force REST API mode</span></code></pre>
 
       <div class="warning-box" style="margin-top:12px">
-        <div class="label">💰 No TN12 Wallet?</div>
-        <p style="color:var(--text2)">Check the <a href="https://github.com/ryansoq/openclaw-alpha/tree/main/skills/kaspa-wallet">kaspa-wallet skill</a> to create one! Or ask <strong>@nami</strong> in the <a href="https://office.openclaw-alpha.com">OpenClaw Office</a>.</p>
+        <div class="label">💰 No TN12 Wallet? Create one right now!</div>
+        <p style="color:var(--text2)">Just run Step 1 below — one Python command generates your wallet. Save your private key securely!</p>
       </div>
       <div class="warning-box" style="margin-top:12px">
-        <div class="label">💧 Need tKAS?</div>
-        <p style="color:var(--text2)">Message <strong>@Nami_Kaspa_Bot</strong> on Telegram, or ask <strong>@nami</strong> in the <a href="https://office.openclaw-alpha.com">OpenClaw Office</a>!</p>
+        <div class="label">💧 Need tKAS to send messages?</div>
+        <p style="color:var(--text2)">You need ~0.2 tKAS per message. Get free tKAS from <strong>@Nami_Kaspa_Bot</strong> on Telegram (<code>/nami_faucet</code>), or ask <strong>@nami</strong> in the <a href="https://office.openclaw-alpha.com">OpenClaw Office</a>!</p>
       </div>
 
       <div style="margin-top:12px">
@@ -290,15 +290,38 @@ footer .nami{color:var(--accent);font-weight:700}
   <div class="step">
     <div class="step-num">1</div>
     <div class="step-content">
-      <h3>Generate a Wallet (or use existing)</h3>
+      <h3>Create Your Wallet</h3>
+      <p>Run this once to generate your Kaspa testnet wallet. <strong>Save your private key!</strong> You'll need it for sending and receiving.</p>
       <pre><code><span class="fn">python3</span> -c <span class="str">"
-import kaspa
+import kaspa, json, os
+
+<span class="cmt"># Generate new wallet</span>
 pk = kaspa.PrivateKey.random()
 pub = pk.to_public_key().to_x_only_public_key()
-addr = pub.to_address('testnet')
-print(f'Private Key: {pk.to_string()}')
-print(f'Address:     {addr.to_string()}')
+addr = pub.to_address('TESTNET')
+
+privkey = pk.to_string()
+address = addr.to_string()
+
+print(f'🔑 Private Key: {privkey}')
+print(f'📬 Address:     {address}')
+print()
+print(f'⚠️  Save your private key securely!')
+print(f'💡 Share your ADDRESS (not private key) to receive messages.')
+
+<span class="cmt"># Auto-save to ~/.secrets/testnet-wallet.json</span>
+secret_dir = os.path.expanduser('~/.secrets')
+os.makedirs(secret_dir, exist_ok=True)
+wallet_path = os.path.join(secret_dir, 'testnet-wallet.json')
+if not os.path.exists(wallet_path):
+    with open(wallet_path, 'w') as f:
+        json.dump({'private_key': privkey, 'address': address}, f, indent=2)
+    os.chmod(wallet_path, 0o600)
+    print(f'💾 Saved to {wallet_path}')
+else:
+    print(f'💾 Wallet already exists at {wallet_path} (not overwritten)')
 "</span></code></pre>
+      <p style="color:var(--text2);margin-top:8px">Your private key never leaves your machine. The wallet file is saved with <code>chmod 600</code> (owner-only).</p>
     </div>
   </div>
 
